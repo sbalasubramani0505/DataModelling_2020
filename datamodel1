@@ -1,0 +1,81 @@
+You need to create a data mart that will store data on phone sales. The reports that will be generated have been provided to you, and you will need to design the data model to support them. The list of requested reports is below, design the tables that you would use to support them:
+
+• A report of phone sales broken by phone model, showing both total sales and volume
+• A report of customers who purchased a phone in the last 3 months - this report shows individual customer and specific phone information
+• A report of discounts provided to customers by sales in a region, such as a country, state, city, etc
+
+Keep in mind that the same phone model may have a different price from year to year, and that list price and actual sale amount may be different.
+
+Your answer only needs to include table names, field names, and foreign key relationships, for example:
+
+table_1
+• id
+• table_2_id (fk)
+• field_1
+• field_2
+
+table_2
+• id
+• field_1
+• field_2
+
+Design your tables below:
+
+Table1: Customer_pii
+cust_id (pk) 
+cust_name  (encrypted)
+cust_addr_line_1 
+cust_addr_line_2
+city
+state
+zip
+insert_ts
+upd_ts
+
+Table2: Phone_Model_info ## To persist historic payrate information (slowly changing dimension type II)
+phone_id (pk)
+phone_make
+phone_model
+year_of_release
+list_price
+start_period
+end_period
+current_flg 
+insert_ts
+upd_ts
+
+1100 company_1  model_1  2019  5000 2019-01-01 2020-12-31   0
+1100 company_1  model_1  2019  4500 2020-01-01              1 => most recent price
+
+Table3: promotions
+
+promotion_id (pk)
+promotion_name
+promotion_type (dollar or percentage)
+promotion_code
+valid_from
+valid_to
+insert_ts
+upd_ts
+
+Table3: Phone_Sales
+
+sale_id (pk)
+cust_id (fk)
+date_of_purchase - timestamp YYYY-MM-DD HH:mm:ss
+quantity
+phone_id (fk)
+promotion_id(fk)
+tax
+sale_amt
+insert_ts
+upd_ts
+
+
+• A report of phone sales broken by phone model, showing both total sales and volume => phone_sales join phone_model_info on phone_id to get phone_model and rollup 
+sale_amt and quantity
+• A report of customers who purchased a phone in the last 3 months - this report shows individual customer and specific phone information => phone_sales - filter for date_of_purchase within last 3 months - join to customer_pii dim to get customer info and phone_model_info for the make
+• A report of discounts provided to customers by sales in a region, such as a country, state, city, etc => (state - customer state of residence ? or can purchase 
+region be different?) - high level join phone_sales to customer dim based on cust_id - and rollup based on city state (or region)
+
+
